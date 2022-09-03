@@ -1,0 +1,10 @@
+__pycache__/
+ftenv/
+bank_activity/
+credit_card_activity/
+config/bank_config.json
+config/credit_card_config.json
+out.csv
+todo.txt
+*.xlsx
+*.zip

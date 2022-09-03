@@ -1,0 +1,16 @@
+{
+  "income": {
+    "salary": ["salary substring"]
+  },
+  "expenses": {
+    "rent": ["rent substring"],
+    "credit card": ["credit card pmt"]
+  },
+  "transfers": {
+    "transfer": ["transfer substring"]
+  },
+  "unknown": {
+    "credit": [],
+    "debit": []
+  }
+}

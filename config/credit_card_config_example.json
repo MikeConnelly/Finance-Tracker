@@ -1,0 +1,9 @@
+{
+  "groceries": ["grocery store substring", "other store substring"],
+  "gas": [],
+  "coffee": [],
+  "eating out": [],
+  "entertainment": [],
+  "misc": [],
+  "unknown": []
+}
