@@ -1,6 +1,8 @@
 import os
 import csv
 import copy
+#from datetime import datetime
+from collections import OrderedDict
 from typing import Dict, List, Tuple
 
 def parse_credit_card_data(credit_card_config: Dict[str, List[str]],
@@ -23,6 +25,10 @@ def parse_credit_card_data(credit_card_config: Dict[str, List[str]],
     for month, category_map in credit_card_data.items():
         for category, value in category_map.items():
             credit_card_data[month][category] = round(value, 2)
+    
+    # sort by month
+    #credit_card_data = sort_dict_data(credit_card_data)
+    credit_card_data = OrderedDict(sorted(credit_card_data.items()))
     
     return credit_card_data
 
@@ -74,9 +80,9 @@ def parse_credit_card_files(credit_card_activity_dir: str,
                 if line == 1 or len(amount) == 0:
                     continue
                 
-                # format date into MM/YYYY
+                # format date into YYYY/MM
                 date = date.strip()
-                month = date[0:2] + date[5:]
+                month = date[6:] + '/' + date[0:2]
                 # format description
                 desc = desc.lower()
                 # format amount, skip improperly formatted lines
@@ -100,4 +106,5 @@ def parse_credit_card_files(credit_card_activity_dir: str,
                 # if description did not match any category, put amount into other expenses
                 if not substring_found:
                     credit_card_data[month]['unknown'] += amount
+                    print('unknown category for payment: ' + desc)
     return credit_card_data
