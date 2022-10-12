@@ -17,13 +17,10 @@ def main():
 
     create_xlsx_file(bank_data, credit_card_data)
 
-    # NOTE: credit card payments are listed in cc files with a negative value, how does that work????
-    # it's already filtered out unintentionally
-
 def load_config_file(config_file: str) -> dict:
     """
     Load `config_file` into a `dict` mapping categories to lists of substrings.
-    Strucutre of the returned dictionary depends on the contents of the given config file.
+    Structure of the returned dictionary depends on the contents of the given config file.
     """
     with open(config_file) as config_json:
         return json.load(config_json)

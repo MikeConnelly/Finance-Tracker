@@ -1,7 +1,6 @@
 import os
 import csv
 import copy
-#from datetime import datetime
 from collections import OrderedDict
 from typing import Dict, List, Tuple
 
@@ -27,7 +26,6 @@ def parse_credit_card_data(credit_card_config: Dict[str, List[str]],
             credit_card_data[month][category] = round(value, 2)
     
     # sort by month
-    #credit_card_data = sort_dict_data(credit_card_data)
     credit_card_data = OrderedDict(sorted(credit_card_data.items()))
     
     return credit_card_data
