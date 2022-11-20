@@ -1,0 +1,18 @@
+{
+  "income": {
+    "Job X": ["direct deposit"]
+  },
+  "expenses": {
+    "rent": ["apartment name"],
+    "car payment": ["auto loan company"],
+    "misc": ["generic store name"],
+    "unknown": []
+  },
+  "transfers": {
+    "credit card payment": ["credit card pmt"]
+  },
+  "unknown": {
+    "credit": [],
+    "debit": []
+  }
+}

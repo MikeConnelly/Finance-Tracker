@@ -1,108 +1,65 @@
-import os
 import csv
-import copy
-from collections import OrderedDict
-from typing import Dict, List, Tuple
+import os
+from datetime import datetime
+from typing import List, Tuple
 
-def parse_credit_card_data(credit_card_config: Dict[str, List[str]],
-                           credit_card_activity_dir: str
-                          ) -> Dict[str, Dict[str, float]]:
+from finance_data import FinanceData
+
+
+def parse_credit_card_data(finance_data: FinanceData,
+                           description_map: List[Tuple[str, str, str]],
+                           credit_card_activity_dir: str):
     """
     Parse all transactions from files in `credit_card_activity_dir`.
-    Create a `dict` of credit card data that contains sums of all transactions of the same month and category.
-    categories are determined by `credit_card_config`.
-
-    `returns` a `dict` of all transaction data mapping month to categories, to the sum of all
-    transactions within this category.
-    """
-    credit_card_default_values = create_default_value_map(credit_card_config)
-    description_map = create_description_map(credit_card_config)
-
-    credit_card_data = parse_credit_card_files(credit_card_activity_dir, credit_card_default_values, description_map)
-    
-    # round all values to 2 decimal points
-    for month, category_map in credit_card_data.items():
-        for category, value in category_map.items():
-            credit_card_data[month][category] = round(value, 2)
-    
-    # sort by month
-    credit_card_data = OrderedDict(sorted(credit_card_data.items()))
-    
-    return credit_card_data
-
-###################
-# PRIVATE METHODS #
-###################
-
-def create_default_value_map(credit_card_config: Dict[str, List[str]]) -> Dict[str, float]:
-    """Create default value `dict` by replacing the substring lists in `credit_card_config` with zeros."""
-    credit_card_default_values = copy.deepcopy(credit_card_config)
-    for category in credit_card_default_values.keys():
-        credit_card_default_values[category] = 0
-    return credit_card_default_values
-
-def create_description_map(credit_card_config: Dict[str, List[str]]) -> List[Tuple[str, str]]:
-    """Create a `list` of all substrings in `credit_card_config` tupled with their categories."""
-    return [(category, substring) for category in credit_card_config for substring in credit_card_config[category]]
-
-def parse_credit_card_files(credit_card_activity_dir: str,
-                            credit_card_default_values: Dict[str, float],
-                            description_map: List[Tuple[str, str]]
-                           ) -> Dict[str, Dict[str, float]]:
-    """
-    Read all lines from files in `credit_card_activity_dir`.
+    Add values to `finance_data` to sum all transactions of the same date and categories.
     Attempt to match each transaction description to a substring in `description_map`.
-    If a match is found, the transaction value will be added to the data `dict` under it's month and category.
-    Otherwise, it will be added to the data under it's month, unknown category.
-
-    `credit_card_default_values` is used to populate default values each time a new month is added to the data.
-
-    `description_map` should contain tuples of category and substring.
+    If a match is found, the transaction value will be added to `finance_data` under it's date, major category, and
+    minor category. Otherwise, it will be added to the data under it's date, expenses category, and unknown category.
     """
-    credit_card_data = {}
     for credit_card_file in os.listdir(credit_card_activity_dir):
         file_path = f'{credit_card_activity_dir}/{credit_card_file}'
         with open(file_path, 'r') as f:
             reader = csv.reader(f)
-            line = 0
-            for row in reader:
-                line += 1
+            for index, row in enumerate(reader):
+                parse_row(finance_data, description_map, index, row)
 
-                # avoid errors with improperly formatted files
-                if len(row) > 3:
-                    row = row[0:3]
-                if len(row) < 3:
-                    continue
-                [date, desc, amount] = row
-                # remove header and extra lines
-                if line == 1 or len(amount) == 0:
-                    continue
-                
-                # format date into YYYY/MM
-                date = date.strip()
-                month = date[6:] + '/' + date[0:2]
-                # format description
-                desc = desc.lower()
-                # format amount, skip improperly formatted lines
-                # this actually skips lines with negative values like credit card payments
-                # should probably check for that explicitly
-                if amount[0] != '$':
-                    continue
-                amount = float(amount[1::])
 
-                # check if month already exists in cc_data. If not, then create a new entry for it
-                if month not in credit_card_data.keys():
-                    credit_card_data[month] = copy.deepcopy(credit_card_default_values)
+def parse_row(finance_data: FinanceData,
+              description_map: List[Tuple[str, str, str]],
+              index: int,
+              row: List[str]):
+    """Parse a row of a credit card file."""
+    if index == 0:
+        return
+    # avoid errors with improperly formatted files
+    if len(row) > 3:
+        row = row[0:3]
+    if len(row) < 3:
+        print(f'file_path: line {index} invalid')
+        return
+    [date_str, desc, amount_str] = row
+    # remove header and extra lines
+    if len(amount_str) == 0:
+        return
+    # format row values
+    date = datetime.strptime(date_str.strip(), '%m/%d/%Y')
+    desc = desc.lower()
+    # format amount, skip improperly formatted lines
+    # this actually skips lines with negative values like credit card payments
+    # should probably check for that explicitly
+    if amount_str[0] != '$':
+        print(f'file_path: line {index} has invalid amount value')
+        return
+    amount = float(amount_str[1::])
 
-                # put amount into it's category
-                substring_found = False
-                for category, substring in description_map:
-                    if substring in desc:
-                        credit_card_data[month][category] += amount
-                        substring_found = True
-                        break
-                # if description did not match any category, put amount into other expenses
-                if not substring_found:
-                    credit_card_data[month]['unknown'] += amount
-                    print('unknown category for payment: ' + desc)
-    return credit_card_data
+    # put amount into it's category
+    substring_found = False
+    for major, minor, substring in description_map:
+        if substring in desc:
+            finance_data.add_value(date, major, minor, amount)
+            substring_found = True
+            break
+    # if description did not match any category, put amount into other expenses
+    if not substring_found:
+        finance_data.add_value(date, 'expenses', 'unknown', amount)
+        print('unknown category for payment: ' + desc)

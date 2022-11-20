@@ -1,11 +1,17 @@
-import xlsxwriter
 from typing import Dict
-from writers import bank_data_writer, credit_card_data_writer
 
-def create_xlsx_file(bank_data: Dict[str, Dict[str, Dict[str, float]]], credit_card_data: Dict[str, Dict[str, float]]):
-    """Create xlsx file from bank and credit card data."""
-    workbook = xlsxwriter.Workbook('output.xlsx')
-    bank_data_writer.create_bank_data_worksheet(workbook, bank_data)
-    credit_card_data_writer.create_credit_card_data_worksheet(workbook, credit_card_data)
-    # maybe combine the bank expenses with cc expenses into a total expenses graph
+import xlsxwriter
+
+from finance_data import FinanceData
+from writers import monthly_expenses_writer, overall_data_writer, daily_expenses_writer, writer_utils
+
+FILE_NAME = 'output.xlsx'
+
+
+def create_xlsx_file(finance_data: FinanceData):
+    """Create xlsx file from parsed finance data."""
+    workbook = xlsxwriter.Workbook(FILE_NAME)
+    overall_data_writer.create_overall_data_worksheet(workbook, finance_data)
+    monthly_expenses_writer.create_monthly_expenses_worksheet(workbook, finance_data)
+    daily_expenses_writer.create_daily_expenses_worksheets(workbook, finance_data)
     workbook.close()
