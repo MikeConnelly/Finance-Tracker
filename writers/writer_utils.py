@@ -30,29 +30,55 @@ def write_data_cells_by_row(worksheet, row_start_index: int, col_start_index: in
 
 
 def write_sum_row(worksheet,
-                  row_index: int,
-                  sum_rows_start_zero_indexed: int,
-                  num_sum_rows: int,
+                  sum_row_index: int,
+                  row_start_zero_indexed: int,
+                  num_rows: int,
                   col_start_zero_indexed: int,
                   num_cols: int):
     """
     Write a row that contains the SUM formula for adding a number of rows.
-    
+
     :param Any worksheet: Worksheet to write contents.
-    :param int row_index: The sum row index.
-    :param int sum_rows_start_zero_indexed: The row index to start the SUM formula.
+    :param int sum_row_index: The sum row index.
+    :param int row_start_zero_indexed: The row index to start the SUM formula.
     :param int num_sum_rows: The number of rows to sum.
     :param int col_start_zero_indexed: The column to start the sum row from.
     :param int num_cols: The number of columns in the sum row.
     """
     # convert zero-indexed cell values to actual cell values
-    sum_rows_start_index = sum_rows_start_zero_indexed + 1
-    sum_rows_end_index = sum_rows_start_zero_indexed + num_sum_rows
+    row_start_index = row_start_zero_indexed + 1
+    row_end_index = row_start_zero_indexed + num_rows
 
     for col_index in range(col_start_zero_indexed, col_start_zero_indexed + num_cols):
         col = utility.xl_col_to_name(col_index)
-        sum_formula = '=SUM({}{}:{}{})'.format(col, sum_rows_start_index, col, sum_rows_end_index)
-        worksheet.write(row_index, col_index, sum_formula)
+        sum_formula = '=SUM({}{}:{}{})'.format(col, row_start_index, col, row_end_index)
+        worksheet.write(sum_row_index, col_index, sum_formula)
+
+
+def write_sum_col(worksheet,
+                  sum_col_index: int,
+                  row_start_zero_indexed: int,
+                  num_rows: int,
+                  col_start_zero_indexed: int,
+                  num_cols: int):
+    """
+    Write a column that contains the SUM formula for adding a number of columns.
+
+    :param Any worksheet: Worksheet to write contents.
+    :param int sum_col_index: The sum column index.
+    :param int row_start_zero_indexed: The row index to start the SUM formula.
+    :param int num_rows: The number of rows to sum.
+    :param int col_start_zero_indexed: The column to start the sum row from.
+    :param int num_cols: The number of columns in the sum row.
+    """
+    # convert zero-indexed cell values to actual cell values
+    start_col = utility.xl_col_to_name(col_start_zero_indexed)
+    end_col = utility.xl_col_to_name(col_start_zero_indexed + num_cols)
+
+    for row_index in range(row_start_zero_indexed, row_start_zero_indexed + num_rows):
+        row = row_index + 1
+        sum_formula = '=SUM({}{}:{}{})'.format(start_col, row, end_col, row)
+        worksheet.write(row_index, sum_col_index, sum_formula)
 
 
 def write_subtract_row(worksheet,
@@ -81,15 +107,15 @@ def write_subtract_row(worksheet,
 
 
 def create_line_chart_with_series_as_rows(chart,
-                      worksheet_name: str,
-                      x_axis_row_zero_indexed: int,
-                      series_name_col_zero_indexed: int,
-                      data_start_row_zero_indexed: int,
-                      num_data_rows: int,
-                      data_start_col_zero_indexed: int,
-                      num_data_cols: int,
-                      line_styles: dict = {}
-                      ):
+                                          worksheet_name: str,
+                                          x_axis_row_zero_indexed: int,
+                                          series_name_col_zero_indexed: int,
+                                          data_start_row_zero_indexed: int,
+                                          num_data_rows: int,
+                                          data_start_col_zero_indexed: int,
+                                          num_data_cols: int,
+                                          line_styles: dict = {}
+                                          ):
     """
     Populate a line chart with each series being a row.
 
@@ -129,15 +155,15 @@ def create_line_chart_with_series_as_rows(chart,
 
 
 def create_line_chart_with_series_as_cols(chart,
-                          worksheet_name: str,
-                          series_name_row_zero_indexed: int,
-                          x_axis_col_zero_indexed: int,
-                          data_start_row_zero_indexed: int,
-                          num_data_rows: int,
-                          data_start_col_zero_indexed: int,
-                          num_data_cols: int,
-                          line_styles: dict = {}
-                          ):
+                                          worksheet_name: str,
+                                          series_name_row_zero_indexed: int,
+                                          x_axis_col_zero_indexed: int,
+                                          data_start_row_zero_indexed: int,
+                                          num_data_rows: int,
+                                          data_start_col_zero_indexed: int,
+                                          num_data_cols: int,
+                                          line_styles: dict = {}
+                                          ):
     """
     Populate a line chart with each series being a column.
 

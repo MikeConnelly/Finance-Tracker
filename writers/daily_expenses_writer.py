@@ -12,14 +12,14 @@ def create_daily_expenses_worksheets(workbook: xlsxwriter.Workbook, finance_data
     for year, month in finance_data.get_months():
         daily_expenses = finance_data.get_daily_expenses(year, month)
         create_daily_expenses_worksheet(
-            workbook, f'{year}-{month}', daily_expenses)
+            workbook, f'{year}-{month}_EXPENSES', daily_expenses)
 
 
 def create_daily_expenses_worksheet(workbook: xlsxwriter.Workbook,
-                                    month: str,
+                                    worksheet_name: str,
                                     daily_expenses: Dict[str, Dict[str, float]]):
     """Create a worksheet and populate it with expenses by day from the given month."""
-    worksheet = workbook.add_worksheet(month)
+    worksheet = workbook.add_worksheet(worksheet_name)
     # setup sheet indices
     category_row_index = 0
     category_col_start_index = 1
@@ -29,17 +29,17 @@ def create_daily_expenses_worksheet(workbook: xlsxwriter.Workbook,
     data_start_col_index = 1
 
     days = list(daily_expenses.keys())
-    first_month_entry = days[0]
+    first_day_map = days[0]
     num_days = len(days)
-    num_categories = len(daily_expenses[first_month_entry])
+    num_categories = len(daily_expenses[first_day_map])
 
-    # write month row
+    # write category row
     writer_utils.write_row(worksheet, category_row_index, category_col_start_index,
-                           list(daily_expenses[first_month_entry].keys()))
-    # write category name column
+                           list(daily_expenses[first_day_map].keys()))
+    # write day column
     writer_utils.write_col(worksheet, day_row_start_index, day_col_index, days)
 
-    # convert monthly data dicts into a list
+    # convert daily data dicts into a list
     data = []
     for _, category_map in daily_expenses.items():
         data.append([value for _, value in category_map.items()])
@@ -56,7 +56,7 @@ def create_daily_expenses_worksheet(workbook: xlsxwriter.Workbook,
     # create line chart
     credit_card_data_chart = workbook.add_chart({'type': 'line'})
     credit_card_data_chart.set_size({'width': 900, 'height': 500})
-    writer_utils.create_line_chart_with_series_as_cols(credit_card_data_chart, month, category_row_index,
+    writer_utils.create_line_chart_with_series_as_cols(credit_card_data_chart, worksheet_name, category_row_index,
                                                        day_col_index, data_start_row_index, num_days,
                                                        data_start_col_index, num_categories)
     chart_cell = utility.xl_rowcol_to_cell(0, num_categories + 2)

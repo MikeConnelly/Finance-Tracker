@@ -1,18 +1,16 @@
-from typing import Dict
-
 import xlsxwriter
 from xlsxwriter import utility
 
 from finance_data import FinanceData
 from writers import writer_utils
 
-OVERALL_DATA_WORKSHEET_NAME = 'Overall_Data'
+OVERALL_DATA_WORKSHEET_NAME = 'OVERALL_DATA'
 
 
 def create_overall_data_worksheet(workbook: xlsxwriter.Workbook, financeData: FinanceData):
     """Create a new worksheet and populate it with the overall data by month."""
     worksheet = workbook.add_worksheet(OVERALL_DATA_WORKSHEET_NAME)
-    overall_data = financeData.get_monthly_totals()
+    overall_data = financeData.get_monthly_overall()
     # setup sheet indices
     month_row_index = 0
     month_col_start_index = 1

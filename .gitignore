@@ -5,5 +5,5 @@ credit_card_activity/
 config/config.json
 out.csv
 todo.txt
-*.xlsx
+*.xlsx*
 *.zip

@@ -37,7 +37,7 @@ def parse_row(finance_data: FinanceData,
     date = datetime.strptime(date_str, '%Y/%m/%d')
     desc = desc.lower()
     amount = float(amount_str)
-    
+
     # put amount into it's category
     substring_found = False
     for major, minor, substring in description_map:
@@ -48,6 +48,7 @@ def parse_row(finance_data: FinanceData,
     # if description did not match any category, put amount into other
     if not substring_found:
         # assume credit = income, debit = expense
+        print(f'unknown category for {desc}')
         if transaction_type == 'CREDIT':
             finance_data.add_value(date, 'unknown', 'credit', amount)
         else:
