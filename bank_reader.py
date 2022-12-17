@@ -7,12 +7,12 @@ from finance_data import FinanceData
 
 
 def parse_bank_data(finance_data: FinanceData,
-                    description_map: List[Tuple[str, str, str]],
+                    substring_map: List[Tuple[str, str, str]],
                     bank_activity_dir: str):
     """
     Parse all transactions from files in `bank_activity_dir`.
     Add values to `finance_data` to sum all transactions of the same date and categories.
-    Attempt to match each transaction description to a substring in `description_map`.
+    Attempt to match each transaction description to a substring in `substring_map`.
     If a match is found, the transaction value will be added to `finance_data` under it's date, major category,
     and minor category. Otherwise, it will be added to the data under it's date, unknown category, credit or debit.
     """
@@ -21,11 +21,11 @@ def parse_bank_data(finance_data: FinanceData,
         with open(file_path, 'r') as f:
             reader = csv.reader(f)
             for index, row in enumerate(reader):
-                parse_row(finance_data, description_map, index, row)
+                parse_row(finance_data, substring_map, index, row)
 
 
 def parse_row(finance_data: FinanceData,
-              description_map: List[Tuple[str, str, str]],
+              substring_map: List[Tuple[str, str, str]],
               index: int,
               row: List[str]):
     """Parse a row of a bank file."""
@@ -40,7 +40,7 @@ def parse_row(finance_data: FinanceData,
 
     # put amount into it's category
     substring_found = False
-    for major, minor, substring in description_map:
+    for major, minor, substring in substring_map:
         if substring in desc:
             finance_data.add_value(date, major, minor, amount)
             substring_found = True

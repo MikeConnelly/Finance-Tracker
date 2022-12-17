@@ -68,8 +68,6 @@ class FinanceData:
                         prev_month_expenses[minor] = round(prev_month_expenses[minor], 2)
             except KeyError as e:  # previous year doesn't exist or doesn't have an entry for december
                 pass
-            except ValueError as e:
-                print('improperly formatted year value ' + e)
         monthly_expenses = self.get_monthly_expenses(year)
         for month in monthly_expenses:
             monthly_percent_change[month] = copy.deepcopy(default_expenses_values)
