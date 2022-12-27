@@ -57,10 +57,6 @@ class FinanceData:
         # get the previous month map if it is the last month of the previous year
         if len(self.data[year].keys()) == 12:
             try:
-                ############################################
-                # TODO: write a method to get totals for a single month
-                # then this AND the logic inside the for loop above can be moved there
-                ############################################
                 prev_month = self.data[str(int(year) - 1)]['12']
                 for day in prev_month:
                     for minor in prev_month[day]['expenses']:

@@ -3,8 +3,17 @@ from xlsxwriter import utility
 
 from finance_data import FinanceData
 from writers import writer_utils
+from writers.category_totals_table import ExpensesTable
 
 OVERALL_DATA_WORKSHEET_NAME = 'OVERALL_DATA'
+
+
+def new_create_overall_data_worksheet(workbook: xlsxwriter.Workbook, financeData: FinanceData):
+    """"""
+    worksheet = workbook.add_worksheet("new")
+    overall_data = financeData.get_monthly_overall()
+    # table = ExpensesTable(0, 0, overall_data)
+    # writer_utils.create_line_chart_for_table(workbook, worksheet, "new", table)
 
 
 def create_overall_data_worksheet(workbook: xlsxwriter.Workbook, financeData: FinanceData):

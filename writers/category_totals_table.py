@@ -108,6 +108,7 @@ class Series:
                  styles: Dict[str, Dict[str, Dict[str, str]]]):
         self.start_row = start_row
         self.col = col
+        self.category = category
         self.formats = styles[category] if category in styles.keys() else DEFAULT_STYLES[col % len(DEFAULT_STYLES)]
         self.header_cell = Cell(start_row, col, category, self.formats['header'])
         self.data: list[Cell] = []
@@ -135,7 +136,7 @@ class Series:
         return cell_list
 
 
-class CategoryTotalsTable:
+class ExpensesTable:
     """
     Converts an expenses dictionary to a Table
 
@@ -146,10 +147,11 @@ class CategoryTotalsTable:
                  start_row: int,
                  start_col: int,
                  expenses: Dict[str, Dict[str, float]],
-                 styles: Dict[str, Dict[str, str]],
+                 styles: Dict[str, Dict[str, str]] = {},
                  include_sum_row: bool = True):
         self.start_row = start_row
         self.start_col = start_col
+        self.includes_sum_row = include_sum_row
         self.timespans = list(expenses.keys())
         self.timespan_col: list[Cell] = []
         timespan_row_index = start_row + 1
@@ -174,8 +176,8 @@ class CategoryTotalsTable:
             all_columns.append(col.get_cells_as_list())
         return all_columns
 
-    def get_data_cols_as_lists(self) -> list[list[Cell]]:
-        data_columns = []
-        for col in self.columns:
-            data_columns.append(col.get_cells_as_list())
-        return data_columns
+    def get_num_data_rows(self) -> int:
+        if self.includes_sum_row:
+            return len(self.timespan_col) - 1
+        else:
+            return len(self.timespan_col)

@@ -5,7 +5,7 @@ from xlsxwriter import utility
 
 from finance_data import FinanceData
 from writers import writer_utils
-from writers.category_totals_table import CategoryTotalsTable
+from writers.category_totals_table import ExpensesTable
 
 
 def create_daily_expenses_worksheets(workbook: xlsxwriter.Workbook,
@@ -24,21 +24,6 @@ def create_daily_expenses_worksheet(workbook: xlsxwriter.Workbook,
                                     styles_map: Dict[str, Dict[str, Dict[str, str]]]):
     """Create a worksheet and populate it with expenses by day from the given month."""
     worksheet = workbook.add_worksheet(worksheet_name)
-    # setup sheet indices
-    category_row_index = 0
-    category_col_start_index = 1
-    day_col_index = 0
-    day_row_start_index = 1
-    data_start_row_index = 1
-    data_start_col_index = 1
-
-    days = list(daily_expenses.keys())
-    first_day_map = days[0]
-    num_days = len(days)
-    num_categories = len(daily_expenses[first_day_map])
-
-    table = CategoryTotalsTable(category_row_index, day_col_index, daily_expenses, styles_map)
+    table = ExpensesTable(0, 0, daily_expenses, styles_map)
     writer_utils.write_table(workbook, worksheet, table)
-    writer_utils.create_line_chart(
-        workbook, worksheet, worksheet_name, category_row_index, day_col_index, data_start_row_index, num_days,
-        data_start_col_index, num_categories, category_row_index, num_categories + 2)
+    writer_utils.create_line_chart_for_table(workbook, worksheet, worksheet_name, table)

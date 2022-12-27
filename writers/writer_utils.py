@@ -1,7 +1,7 @@
 from typing import Dict
 
 from xlsxwriter import Workbook, utility
-from writers.category_totals_table import CategoryTotalsTable, Cell
+from writers.category_totals_table import ExpensesTable, Cell
 
 Worksheet = Workbook.worksheet_class
 
@@ -275,7 +275,7 @@ def write_table_column(workbook: Workbook, worksheet: Worksheet, col: list[Cell]
         write_table_cell(workbook, worksheet, cell)
 
 
-def write_table(workbook: Workbook, worksheet: Worksheet, table: CategoryTotalsTable):
+def write_table(workbook: Workbook, worksheet: Worksheet, table: ExpensesTable):
     table_cols = table.get_cols_as_lists()
     for col in table_cols:
         write_table_column(workbook, worksheet, col)
@@ -284,12 +284,27 @@ def write_table(workbook: Workbook, worksheet: Worksheet, table: CategoryTotalsT
 def create_line_chart_for_table(workbook: Workbook,
                                 worksheet: Worksheet,
                                 worksheet_name: str,
-                                table: CategoryTotalsTable):
+                                table: ExpensesTable):
     chart = workbook.add_chart({'type': 'line'})
     chart.set_size({'width': 900, 'height': 500})
 
     xl_timespan_col = utility.xl_col_to_name(table.start_col)
+    xl_data_start_row = table.start_row + 1
+    xl_data_end_row = table.start_row + table.get_num_data_rows()
 
     col_reference_str = '={}!${}${}:${}${}'
-    x_axis_col = col_reference_str.format(worksheet_name, xl_timespan_col, data_start_row_index, xl_timespan_col,
-                                          data_end_row_index)
+    x_axis_col = col_reference_str.format(
+        worksheet_name, xl_timespan_col, xl_data_start_row, xl_timespan_col, xl_data_end_row)
+    for series in table.columns:
+        xl_col = utility.xl_col_to_name(series.col)
+        values_col = col_reference_str.format(
+            worksheet_name, xl_col, xl_data_start_row, xl_col, xl_data_end_row)
+        chart.add_series({
+            'categories':   x_axis_col,
+            'values':       values_col,
+            'name':         series.category,
+            'line':         {},
+            'marker':       {'type': 'square'}
+        })
+    chart_cell = utility.xl_rowcol_to_cell(10, 10)
+    worksheet.insert_chart(chart_cell, chart)

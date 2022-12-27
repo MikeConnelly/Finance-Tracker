@@ -49,7 +49,7 @@ def create_substring_map(config: Dict[str, Dict[str, Any]]) -> List[Tuple[str, s
             for substring in config[major][minor]['substrings']]
 
 
-def create_styles_map(config: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, str]]:
+def create_styles_map(config: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Dict[str, str]]]:
     """"""
     styles_map = {}
     for major in config.keys():
