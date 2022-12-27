@@ -1,7 +1,7 @@
 from typing import Dict
 
 from xlsxwriter import Workbook, utility
-from writers.category_totals_table import CategoryTotalsTable, DEFAULT_STYLES
+from writers.category_totals_table import CategoryTotalsTable, Cell
 
 Worksheet = Workbook.worksheet_class
 
@@ -32,62 +32,6 @@ def write_data_cells_by_row(worksheet, row_start_index: int, col_start_index: in
     for row_values in data:
         write_row(worksheet, row_start_index, col_start_index, row_values)
         row_start_index += 1
-
-
-def write_table(workbook: Workbook,
-                worksheet: Worksheet,
-                start_row_index: int,
-                start_col_index: int,
-                table: CategoryTotalsTable,
-                styles_map: Dict[str, Dict[str, str]] = {},
-                include_sum_row: bool = True,
-                include_sum_col: bool = True):
-    """Write all columns of a table, including the header row."""
-    # write time col
-    default_styles_index = 0
-    time_cell_row_index = start_row_index + 1
-    for time in table.timespan_col:
-        worksheet.write(time_cell_row_index, start_col_index, time)
-        time_cell_row_index += 1
-
-    data_col_index = start_col_index + 1
-    for col in table.data_cols:
-        data_cell_row_index = start_row_index + 1
-        header_cell_format = workbook.add_format()
-        cell_format = workbook.add_format()
-        alt_cell_format = workbook.add_format()
-        header = col.header
-
-        if header in styles_map.keys():
-            header_cell_format.set_bg_color(styles_map[header]['header_bg_color'])
-            cell_format.set_bg_color(styles_map[header]['bg_color'])
-            alt_cell_format.set_bg_color(styles_map[header]['alt_bg_color'])
-        else:
-            header_cell_format.set_bg_color(DEFAULT_STYLES[default_styles_index]['header_bg_color'])
-            cell_format.set_bg_color(DEFAULT_STYLES[default_styles_index]['bg_color'])
-            alt_cell_format.set_bg_color(DEFAULT_STYLES[default_styles_index]['alt_bg_color'])
-            default_styles_index = (default_styles_index + 1) % len(DEFAULT_STYLES)
-        worksheet.write(start_row_index, data_col_index, header, header_cell_format)
-
-        for cell_data in col.data:
-            if data_cell_row_index % 2 == 0:
-                worksheet.write(data_cell_row_index, data_col_index, cell_data, alt_cell_format)
-            else:
-                worksheet.write(data_cell_row_index, data_col_index, cell_data, cell_format)
-            data_cell_row_index += 1
-        data_col_index += 1
-
-    if include_sum_row:
-        sum_row_index = start_row_index + table.num_data_rows + 1
-        worksheet.write(sum_row_index, start_col_index, 'Total')  # TODO: move this to the write_sum_row fun
-        write_sum_row(worksheet, sum_row_index, start_row_index + 1,
-                      table.num_data_rows, start_col_index + 1, table.num_data_cols)
-
-    if include_sum_col:
-        sum_col_index = start_col_index + table.num_data_cols + 1
-        worksheet.write(start_row_index, sum_col_index, 'Total')
-        write_sum_col(worksheet, sum_col_index, start_row_index + 1,
-                      table.num_data_rows, start_col_index + 1, table.num_data_cols)
 
 
 def write_sum_row(worksheet,
@@ -318,3 +262,34 @@ def create_line_chart(workbook: Workbook,
 
     chart_cell = utility.xl_rowcol_to_cell(chart_cell_row_index, chart_cell_col_index)
     worksheet.insert_chart(chart_cell, chart)
+
+
+
+def write_table_cell(workbook: Workbook, worksheet: Worksheet, cell: Cell):
+    format = workbook.add_format(cell.format)
+    worksheet.write(cell.row, cell.col, cell.value, format)
+
+
+def write_table_column(workbook: Workbook, worksheet: Worksheet, col: list[Cell]):
+    for cell in col:
+        write_table_cell(workbook, worksheet, cell)
+
+
+def write_table(workbook: Workbook, worksheet: Worksheet, table: CategoryTotalsTable):
+    table_cols = table.get_cols_as_lists()
+    for col in table_cols:
+        write_table_column(workbook, worksheet, col)
+
+
+def create_line_chart_for_table(workbook: Workbook,
+                                worksheet: Worksheet,
+                                worksheet_name: str,
+                                table: CategoryTotalsTable):
+    chart = workbook.add_chart({'type': 'line'})
+    chart.set_size({'width': 900, 'height': 500})
+
+    xl_timespan_col = utility.xl_col_to_name(table.start_col)
+
+    col_reference_str = '={}!${}${}:${}${}'
+    x_axis_col = col_reference_str.format(worksheet_name, xl_timespan_col, data_start_row_index, xl_timespan_col,
+                                          data_end_row_index)

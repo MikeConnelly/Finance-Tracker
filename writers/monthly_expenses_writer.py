@@ -73,10 +73,10 @@ def create_expenses_section(workbook: Workbook,
                             num_months: int,
                             data_start_row_index: int,
                             data_start_col_index: int,
-                            styles_map: Dict[str, Dict[str, str]]):
+                            styles_map: Dict[str, Dict[str, Dict[str, str]]]):
     """Create a worksheet and populate it with expenses by month from the given year."""
-    table = CategoryTotalsTable(monthly_expenses)
-    writer_utils.write_table(workbook, worksheet, category_row_index, month_col_index, table, styles_map)
+    table = CategoryTotalsTable(category_row_index, month_col_index, monthly_expenses, styles_map)
+    writer_utils.write_table(workbook, worksheet, table)
     writer_utils.create_line_chart(
         workbook, worksheet, worksheet_name, category_row_index, month_col_index, data_start_row_index, num_months,
         data_start_col_index, num_categories, num_months + 2, month_col_index)
