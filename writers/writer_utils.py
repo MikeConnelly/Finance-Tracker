@@ -275,7 +275,7 @@ def write_table_column(workbook: Workbook, worksheet: Worksheet, col: list[Cell]
         write_table_cell(workbook, worksheet, cell)
 
 
-def write_table(workbook: Workbook, worksheet: Worksheet, table: ExpensesTable):
+def write_table(workbook: Workbook, worksheet: Worksheet, table):
     table_cols = table.get_cols_as_lists()
     for col in table_cols:
         write_table_column(workbook, worksheet, col)
@@ -295,7 +295,7 @@ def create_line_chart_for_table(workbook: Workbook,
     col_reference_str = '={}!${}${}:${}${}'
     x_axis_col = col_reference_str.format(
         worksheet_name, xl_timespan_col, xl_data_start_row, xl_timespan_col, xl_data_end_row)
-    for series in table.columns:
+    for series in table.get_series():
         xl_col = utility.xl_col_to_name(series.col)
         values_col = col_reference_str.format(
             worksheet_name, xl_col, xl_data_start_row, xl_col, xl_data_end_row)

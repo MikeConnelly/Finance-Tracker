@@ -98,6 +98,9 @@ class Cell:
         self.value = value
         self.format = format
 
+    def __str__(self) -> str:
+        return "Cell(row: {}, col: {}, value: {}, format: {}".format(self.row, self.col, self.value, self.format)
+
 
 class Series:
 
@@ -109,6 +112,7 @@ class Series:
         self.start_row = start_row
         self.col = col
         self.category = category
+        self.sum_cell = None
         self.formats = styles[category] if category in styles.keys() else DEFAULT_STYLES[col % len(DEFAULT_STYLES)]
         self.header_cell = Cell(start_row, col, category, self.formats['header'])
         self.data: list[Cell] = []
@@ -147,7 +151,7 @@ class ExpensesTable:
                  start_row: int,
                  start_col: int,
                  expenses: Dict[str, Dict[str, float]],
-                 styles: Dict[str, Dict[str, str]] = {},
+                 styles: Dict[str, Dict[str, Dict[str, str]]] = {},
                  include_sum_row: bool = True):
         self.start_row = start_row
         self.start_col = start_col
@@ -169,6 +173,9 @@ class ExpensesTable:
             if include_sum_row:
                 col.create_sum_cell()
             self.columns.append(col)
+    
+    def get_series(self) -> list[Series]:
+        return self.columns
 
     def get_cols_as_lists(self) -> list[list[Cell]]:
         all_columns = [self.timespan_col]
@@ -181,3 +188,53 @@ class ExpensesTable:
             return len(self.timespan_col) - 1
         else:
             return len(self.timespan_col)
+
+
+class OverallTable:
+
+    def __init__(self,
+                 start_row: int,
+                 start_col: int,
+                 overall_data: Dict[str, Dict[str, Dict[str, float]]],
+                 styles: Dict[str, Dict[str, Dict[str, str]]] = {},
+                 include_sum_row: bool = False):
+        
+        self.start_row = start_row
+        self.start_col = start_col
+        self.timespans = list(overall_data.keys())
+        self.timespan_col: list[Cell] = []
+        timespan_row_index = start_row + 1
+        for timespan in self.timespans:
+            self.timespan_col.append(Cell(timespan_row_index, start_col, timespan))
+            timespan_row_index += 1
+        
+        self.income_series: list[Series] = []
+        col_index = start_col + 1
+        for category in overall_data[self.timespans[0]]['income'].keys():
+            col = Series(start_row, col_index, category, styles)
+            for time in self.timespans:
+                col.append_data_cell(overall_data[time]['income'][category])
+            self.income_series.append(col)
+            col_index += 1
+
+        self.expenses_series: list[Series] = []
+        for category in overall_data[self.timespans[0]]['expenses'].keys():
+            col = Series(start_row, col_index, category, styles)
+            for time in self.timespans:
+                col.append_data_cell(overall_data[time]['expenses'][category])
+            self.expenses_series.append(col)
+            col_index += 1
+    
+    def get_series(self) -> list[Series]:
+        all_series = []
+        all_series.extend(self.income_series)
+        all_series.extend(self.expenses_series)
+        return all_series
+
+    def get_cols_as_lists(self) -> list[list[Cell]]:
+        all_columns = [self.timespan_col]
+        for col in self.income_series:
+            all_columns.append(col.get_cells_as_list())
+        for col in self.expenses_series:
+            all_columns.append(col.get_cells_as_list())
+        return all_columns
