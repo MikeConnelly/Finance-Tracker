@@ -1,33 +1,36 @@
 from typing import Dict
 
 from finance_data import FinanceData
-from xlsxwriter import Workbook, utility
+from xlsxwriter import Workbook
 
 from writers import writer_utils
-from writers.category_totals_table import ExpensesTable
+from writers.tables import ExpensesTable
+from writers.styles import Styles, merge_styles_with_default_expenses_styles
 
 Worksheet = Workbook.worksheet_class
 
 
-def create_monthly_expenses_worksheets(workbook: Workbook,
-                                       finance_data: FinanceData,
-                                       styles_map: Dict[str, Dict[str, str]],
-                                       description_map: Dict[str, str]):
+def create_monthly_expenses_worksheets(workbook: Workbook, finance_data: FinanceData, styles_map: Styles):
     """Create a new worksheet for every year and populate it with expeneses data."""
     for year in finance_data.get_years():
         monthly_expenses = finance_data.get_monthly_expenses(year)
-        monthly_percent_change = finance_data.get_percent_change_of_monthly_expenses(year)
+        merged_styles_map = merge_styles_with_default_expenses_styles(monthly_expenses, styles_map)
         create_monthly_expenses_worksheet(
-            workbook, f'{year}_EXPENSES', monthly_expenses, monthly_percent_change, styles_map)
+            workbook, f'{year}_EXPENSES', monthly_expenses, merged_styles_map)
 
 
 def create_monthly_expenses_worksheet(workbook: Workbook,
                                       worksheet_name: str,
                                       monthly_expenses: Dict[str, Dict[str, float]],
-                                      monthly_percent_change: Dict[str, Dict[str, float]],
-                                      styles_map: Dict[str, Dict[str, str]]):
+                                      styles_map: Styles):
     """Create a worksheet and populate it with expenses by month from the given year."""
     worksheet = workbook.add_worksheet(worksheet_name)
-    table = ExpensesTable(0, 0, monthly_expenses, styles_map)
+
+    table_row = 0
+    table_col = 0
+    table = ExpensesTable(table_row, table_col, monthly_expenses, styles_map)
     writer_utils.write_table(workbook, worksheet, table)
-    writer_utils.create_line_chart_for_table(workbook, worksheet, worksheet_name, table)
+
+    chart_row = table_row + table.get_height()
+    chart_col = table_col
+    writer_utils.create_line_chart_for_table(workbook, worksheet, worksheet_name, table, chart_row, chart_col)
