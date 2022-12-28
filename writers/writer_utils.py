@@ -1,5 +1,5 @@
 from xlsxwriter import Workbook, utility
-from writers.tables import Cell, Table
+from writers.tables import Table, Series, Cell
 
 Worksheet = Workbook.worksheet_class
 
@@ -27,20 +27,21 @@ def create_line_chart_for_table(workbook: Workbook,
                                 worksheet: Worksheet,
                                 worksheet_name: str,
                                 table: Table,
+                                series_list: list[Series],
                                 chart_row: int,
                                 chart_col: int):
-    """Create a line chart for `worksheet` based off the data in `table`."""
+    """Create a line chart for `worksheet` from the series in `series_list` and the x_axis in `table`."""
     chart = workbook.add_chart({'type': 'line'})
     chart.set_size({'width': 900, 'height': 500})
 
     xl_timespan_col = utility.xl_col_to_name(table.start_col)
-    xl_data_start_row = table.start_row + 1
-    xl_data_end_row = table.start_row + table.get_num_data_rows()
+    xl_data_start_row = table.start_row + 2
+    xl_data_end_row = table.start_row + 1 + table.get_num_data_rows()
 
     col_reference_str = '={}!${}${}:${}${}'
     x_axis_col = col_reference_str.format(
         worksheet_name, xl_timespan_col, xl_data_start_row, xl_timespan_col, xl_data_end_row)
-    for series in table.get_series_for_chart():
+    for series in series_list:
         xl_col = utility.xl_col_to_name(series.col)
         values_col = col_reference_str.format(
             worksheet_name, xl_col, xl_data_start_row, xl_col, xl_data_end_row)

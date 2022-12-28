@@ -92,9 +92,6 @@ class Table:
     def get_width(self) -> int:
         pass
 
-    def get_series_for_chart(self) -> list[Series]:
-        pass
-
     def get_cols_as_lists(self) -> list[list[Cell]]:
         pass
 
@@ -133,7 +130,7 @@ class ExpensesTable(Table):
     def get_width(self) -> int:
         return len(self.columns) + 1
 
-    def get_series_for_chart(self) -> list[Series]:
+    def get_series_for_expenses_chart(self) -> list[Series]:
         return self.columns
 
     def get_cols_as_lists(self) -> list[list[Cell]]:
@@ -219,11 +216,18 @@ class OverallTable(Table):
     def get_width(self) -> int:
         return 1 + len(self.income_series) + len(self.expenses_series) + len(self.transfers_series) + len(self.unknown_series) + 3
 
-    def get_series_for_chart(self) -> list[Series]:
+    def get_series_for_income_expenses_chart(self) -> list[Series]:
         all_series = []
         all_series.extend(self.income_series)
         all_series.extend(self.expenses_series)
         return all_series
+    
+    def get_series_for_totals_chart(self) -> list[Series]:
+        total_series = []
+        total_series.append(self.total_income_series)
+        total_series.append(self.total_expenses_series)
+        total_series.append(self.total_surplus_series)
+        return total_series
 
     def get_cols_as_lists(self) -> list[list[Cell]]:
         all_columns = [self.timespan_col]

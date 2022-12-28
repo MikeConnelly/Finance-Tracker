@@ -36,13 +36,13 @@ def main():
     default_values = create_default_value_map(config)
     substring_map = create_substring_map(config)
     description_map = create_description_map(config)
-    styles_map = create_styles_map(config)
+    custom_styles = create_custom_styles_map(config)
     finance_data = FinanceData(default_values)
 
     parse_bank_data(finance_data, substring_map, BANK_ACTIVITY_DIR)
     parse_credit_card_data(finance_data, substring_map, CREDIT_CARD_ACTIVITY_DIR)
 
-    create_xlsx_file(finance_data, styles_map, description_map)
+    create_xlsx_file(finance_data, custom_styles, description_map)
 
 
 def load_config_file(config_file: str) -> Config:
@@ -68,14 +68,14 @@ def create_substring_map(config: Config) -> List[Tuple[str, str, str]]:
             for substring in config[major][minor]['substrings']]
 
 
-def create_styles_map(config: Config) -> Styles:
+def create_custom_styles_map(config: Config) -> Styles:
     """Creata a `dict` that maps all minor categories in `config` to their styles object."""
-    styles_map = {}
+    custom_styles = {}
     for major in config.keys():
         for minor in config[major].keys():
             if 'styles' in config[major][minor]:
-                styles_map[minor] = config[major][minor]['styles']
-    return styles_map
+                custom_styles[minor] = config[major][minor]['styles']
+    return custom_styles
 
 
 def create_description_map(config: Config) -> Dict[str, str]:

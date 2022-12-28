@@ -6,6 +6,21 @@ from typing import Dict, Tuple
 
 
 class FinanceData:
+    """
+    Object used to store all parsed finance data.
+    Structure of data:
+    {
+        year: {
+            month: {
+                day: {
+                    major_category: {
+                        minor_category: value
+                    }
+                }
+            }
+        }
+    }
+    """
 
     def __init__(self, default_values: Dict[str, Dict[str, float]]):
         self.data = {}
@@ -15,12 +30,23 @@ class FinanceData:
         return json.dumps(self.data, indent=4)
 
     def get_years(self) -> list[str]:
-        """Get a list of years."""
+        """Get a `list` of years."""
         return list(self.data.keys())
 
     def get_months(self) -> list[Tuple[str, str]]:
-        """Get the list of tuples containing all year, month combos present."""
+        """Get the `list` of tuples containing all year, month combos present."""
         return [(year, month) for year in self.data.keys() for month in self.data[year].keys()]
+
+    def get_categories(self) -> Dict[str, list[str]]:
+        """Get teh `dict` of default values for major and minor categories."""
+        categories = {}
+        for major in self.default_values.keys():
+            categories[major] = list(self.default_values[major].keys())
+        return categories
+
+    def get_minor_categories(self, major_category: str) -> list[str]:
+        """Get the `list` of minor categories for a for a given `major_category`."""
+        return list(self.default_values[major_category].keys())
 
     def get_monthly_overall(self) -> Dict[str, Dict[str, Dict[str, float]]]:
         """Get the toals for each major and minor category for every month in this data."""
@@ -48,36 +74,6 @@ class FinanceData:
                     monthly_expenses_totals[month_key][minor] += self.data[year][month][day]['expenses'][minor]
                     monthly_expenses_totals[month_key][minor] = round(monthly_expenses_totals[month_key][minor], 2)
         return monthly_expenses_totals
-
-    def get_percent_change_of_monthly_expenses(self, year: str) -> Dict[str, Dict[str, float]]:
-        """Gets percent change of expenses month over month for a given year."""
-        default_expenses_values = self.default_values['expenses']
-        prev_month_expenses = copy.deepcopy(default_expenses_values)
-        monthly_percent_change = {}
-        # get the previous month map if it is the last month of the previous year
-        if len(self.data[year].keys()) == 12:
-            try:
-                prev_month = self.data[str(int(year) - 1)]['12']
-                for day in prev_month:
-                    for minor in prev_month[day]['expenses']:
-                        prev_month_expenses[minor] += prev_month[day]['expenses'][minor]
-                        prev_month_expenses[minor] = round(prev_month_expenses[minor], 2)
-            except KeyError as e:  # previous year doesn't exist or doesn't have an entry for december
-                pass
-        monthly_expenses = self.get_monthly_expenses(year)
-        for month in monthly_expenses:
-            monthly_percent_change[month] = copy.deepcopy(default_expenses_values)
-            for minor in monthly_expenses[month]:
-                percent_change = 0
-                try:
-                    percent_change = (
-                        (monthly_expenses[month][minor] - prev_month_expenses[minor])
-                        / prev_month_expenses[minor]) * 100
-                except ZeroDivisionError:
-                    percent_change = 'inf'
-                monthly_percent_change[month][minor] = percent_change
-            prev_month_expenses = monthly_expenses[month]
-        return monthly_percent_change
 
     def get_daily_expenses(self, year: str, month: str) -> Dict[str, Dict[str, float]]:
         """Get the contents of the expenses category for every day of a given month and year."""

@@ -5,16 +5,15 @@ import xlsxwriter
 from finance_data import FinanceData
 from writers import writer_utils
 from writers.tables import ExpensesTable
-from writers.styles import Styles, merge_styles_with_default_expenses_styles
+from writers.styles import Styles
 
 
 def create_daily_expenses_worksheets(workbook: xlsxwriter.Workbook, finance_data: FinanceData, styles_map: Styles):
     """Create a new worksheet for every month and populate it with expeneses data."""
     for year, month in finance_data.get_months():
         daily_expenses = finance_data.get_daily_expenses(year, month)
-        merged_styles_map = merge_styles_with_default_expenses_styles(daily_expenses, styles_map)
         create_daily_expenses_worksheet(
-            workbook, f'{year}-{month}_EXPENSES', daily_expenses, merged_styles_map)
+            workbook, f'{year}-{month}_EXPENSES', daily_expenses, styles_map)
 
 
 def create_daily_expenses_worksheet(workbook: xlsxwriter.Workbook,
@@ -31,4 +30,6 @@ def create_daily_expenses_worksheet(workbook: xlsxwriter.Workbook,
 
     chart_row = table_row + table.get_height()
     chart_col = table_col
-    writer_utils.create_line_chart_for_table(workbook, worksheet, worksheet_name, table, chart_row, chart_col)
+    writer_utils.create_line_chart_for_table(
+        workbook, worksheet, worksheet_name, table, table.get_series_for_expenses_chart(),
+        chart_row, chart_col)
