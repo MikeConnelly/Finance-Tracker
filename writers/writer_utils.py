@@ -7,6 +7,8 @@ Worksheet = Workbook.worksheet_class
 def write_cell(workbook: Workbook, worksheet: Worksheet, cell: Cell):
     """Write `cell` to `worksheet`."""
     format = workbook.add_format(cell.format)
+    # default format for all cells
+    format.set_shrink()
     worksheet.write(cell.row, cell.col, cell.value, format)
 
 

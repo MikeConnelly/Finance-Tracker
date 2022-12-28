@@ -38,7 +38,7 @@ class FinanceData:
         return [(year, month) for year in self.data.keys() for month in self.data[year].keys()]
 
     def get_categories(self) -> Dict[str, list[str]]:
-        """Get teh `dict` of default values for major and minor categories."""
+        """Get the `dict` of default values for major and minor categories."""
         categories = {}
         for major in self.default_values.keys():
             categories[major] = list(self.default_values[major].keys())

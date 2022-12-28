@@ -120,6 +120,14 @@ DEFAULT_STYLES_LIST = [
 
 
 DEFAULT_OVERALL_STYLES = {
+    "timespan": {
+        "alt": {
+            "bg_color": "#cccccc"
+        },
+        "total": {
+            "bold": "true"
+        }
+    },
     "income": {
         "header": {
             "bg_color": "#92c57c",
@@ -207,6 +215,7 @@ def create_styles_map_for_overall_data(categories: Dict[str, list[str]]) -> Styl
     for major_category in categories.keys():
         for minor_category in categories[major_category]:
             styles[minor_category] = DEFAULT_OVERALL_STYLES.get(major_category)
+    styles['timespan'] = DEFAULT_OVERALL_STYLES.get('timespan')
     styles['Total Income'] = DEFAULT_OVERALL_STYLES.get('income')
     styles['Total Expenses'] = DEFAULT_OVERALL_STYLES.get('expenses')
     styles['Total Surplus'] = DEFAULT_OVERALL_STYLES.get('surplus')
