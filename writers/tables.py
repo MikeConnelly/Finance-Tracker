@@ -4,6 +4,7 @@ from writers.styles import Styles
 
 
 class Cell:
+    """Stores xlsx cell data including coordinates, value, and format."""
 
     def __init__(self, row: int, col: int, value: str | float, format: Dict[str, str] = None):
         self.row = row
@@ -16,13 +17,9 @@ class Cell:
 
 
 class Series:
+    """Stores xlsx column data including coordinates, cells, and cell formats."""
 
-    def __init__(self,
-                 start_row: int,
-                 col: int,
-                 category: str,
-                 styles: Styles,
-                 use_empty_header: bool = False):
+    def __init__(self, start_row: int, col: int, category: str, styles: Styles, use_empty_header: bool = False):
         self.start_row = start_row
         self.col = col
         self.category = category
@@ -31,20 +28,29 @@ class Series:
         self.header_cell = Cell(start_row, col, header_text, self.get_format('header'))
         self.data: list[Cell] = []
         self.sum_cell = None
+    
+    def __str__(self) -> str:
+        cells_str = ",".join([str(cell) for cell in self.get_cells_as_list])
+        return "Series(start_row: {}, col: {}, category: {}, formats: {}, cells: {})".format(
+            self.start_row, self.col, self.category, self.formats, cells_str)
 
     def get_format(self, format_type: str) -> Dict[str, str]:
+        """Get the format `dict` for the given `format_type` from this series' formats."""
         return self.formats.get(format_type) if self.formats else None
 
     def get_line_styles(self) -> Dict[str, str]:
+        """Get the `dict` of line formats from this series' formats."""
         return self.get_format('line')
 
     def get_height(self) -> int:
+        """Get the column's height."""
         if self.sum_cell:
             return 1 + len(self.data) + 1
         else:
             return 1 + len(self.data)
 
     def get_cells_as_list(self) -> list[Cell]:
+        """Get all cells in the series as a list. Includes header, data, and sum cells."""
         cell_list = [self.header_cell]
         cell_list.extend(self.data)
         if self.sum_cell:
@@ -52,12 +58,17 @@ class Series:
         return cell_list
 
     def append_data_cell(self, value: str | float, cell_type: str = 'data'):
+        """
+        Append a data cell containing `value` to this series' data.
+        Optionally specify `cell_type` to use for the cell's format. Default is `data` or `alt` depending on row index.
+        """
         row = self.start_row + len(self.data) + 1
         if cell_type == 'data' and row % 2 == 0:
             cell_type = 'alt'
         self.data.append(Cell(row, self.col, value, self.get_format(cell_type)))
 
     def append_sum_row_cell(self, start_col: int, end_col: int):
+        """Append a data cell containing the SUM formula for all columns between `start_col` and `end_col`."""
         row = self.start_row + len(self.data) + 1
         xl_row = row + 1
         xl_start_col = utility.xl_col_to_name(start_col)
@@ -66,6 +77,7 @@ class Series:
         self.data.append(Cell(row, self.col, sum_formula, self.get_format('total')))
 
     def append_difference_row_cell(self, col1_index: int, col2_index: int):
+        """Append a data cell containing a subtraction formula for the columns `col1_index` and `col2_index`."""
         row = self.start_row + len(self.data) + 1
         xl_row = row + 1
         xl_col1 = utility.xl_col_to_name(col1_index)
@@ -74,6 +86,7 @@ class Series:
         self.data.append(Cell(row, self.col, diff_formula, self.get_format('total')))
 
     def create_sum_cell(self):
+        """Create a cell that contains the SUM formula for the rows in this column."""
         row = self.start_row + len(self.data) + 1
         xl_start_sum_row = self.start_row + 2
         xl_end_sum_row = self.start_row + len(self.data) + 1
@@ -83,23 +96,31 @@ class Series:
 
 
 class Table:
+    """Stores xlsx table data including coordinates, columns and styles."""
 
     def __init__(self, start_row: int, start_col: int, data: Dict[str, dict], styles: Styles):
         self.start_row = start_row
         self.start_col = start_col
         self.timespans = list(data.keys())
         self.timespan_col = Series(start_row, start_col, 'timespan', styles, use_empty_header=True)
+        
+        for timespan in self.timespans:
+            self.timespan_col.append_data_cell(timespan)
 
     def get_num_data_rows(self) -> int:
+        """Get number of rows in the table containing data. Does not include header or sum rows."""
         return len(self.timespans)
 
     def get_height(self) -> int:
+        """Get total height of the table."""
         return self.timespan_col.get_height()
 
     def get_width(self) -> int:
+        """Get total width of the table."""
         pass
 
     def get_cols_as_lists(self) -> list[list[Cell]]:
+        """Get all columns in the table represented as lists of cells."""
         pass
 
 
@@ -118,9 +139,6 @@ class ExpensesTable(Table):
                  include_sum_row: bool = True):
         super().__init__(start_row, start_col, expenses, styles)
 
-        for timespan in self.timespans:
-            self.timespan_col.append_data_cell(timespan)
-
         self.columns: list[Series] = []
         for col_index, category in enumerate(expenses[self.timespans[0]].keys(), start=start_col + 1):
             col = Series(start_row, col_index, category, styles)
@@ -132,18 +150,22 @@ class ExpensesTable(Table):
             self.append_sum_cells()
 
     def get_width(self) -> int:
+        """Get total width of the table."""
         return len(self.columns) + 1
 
-    def get_series_for_expenses_chart(self) -> list[Series]:
-        return self.columns
-
     def get_cols_as_lists(self) -> list[list[Cell]]:
+        """Get all columns in the table represented as lists of cells."""
         all_columns = [self.timespan_col.get_cells_as_list()]
         for col in self.columns:
             all_columns.append(col.get_cells_as_list())
         return all_columns
 
+    def get_series_for_expenses_chart(self) -> list[Series]:
+        """Get the series used in an expenses chart."""
+        return self.columns
+
     def append_sum_cells(self):
+        """For each data column in the table. Append a cell that sums the values in that column."""
         self.timespan_col.append_data_cell('Totals', cell_type='total')
         for col in self.columns:
             col.create_sum_cell()
@@ -163,9 +185,6 @@ class OverallTable(Table):
                  styles: Styles,
                  include_sum_row: bool = True):
         super().__init__(start_row, start_col, overall_data, styles)
-
-        for timespan in self.timespans:
-            self.timespan_col.append_data_cell(timespan)
 
         timespan = self.timespans[0]
         col_index = start_col + 1
@@ -225,22 +244,11 @@ class OverallTable(Table):
             self.append_sum_cells()
 
     def get_width(self) -> int:
+        """Get total width of the table."""
         return 1 + len(self.income_series) + len(self.expenses_series) + len(self.transfers_series) + len(self.unknown_series) + 3
 
-    def get_series_for_income_expenses_chart(self) -> list[Series]:
-        all_series = []
-        all_series.extend(self.income_series)
-        all_series.extend(self.expenses_series)
-        return all_series
-
-    def get_series_for_totals_chart(self) -> list[Series]:
-        total_series = []
-        total_series.append(self.total_income_series)
-        total_series.append(self.total_expenses_series)
-        total_series.append(self.total_surplus_series)
-        return total_series
-
     def get_cols_as_lists(self) -> list[list[Cell]]:
+        """Get all columns in the table represented as lists of cells."""
         all_columns = [self.timespan_col.get_cells_as_list()]
         for col in self.income_series:
             all_columns.append(col.get_cells_as_list())
@@ -255,7 +263,23 @@ class OverallTable(Table):
             all_columns.append(col.get_cells_as_list())
         return all_columns
 
+    def get_series_for_income_expenses_chart(self) -> list[Series]:
+        """Get the series used in a cahrt of incomes and expenses."""
+        all_series = []
+        all_series.extend(self.income_series)
+        all_series.extend(self.expenses_series)
+        return all_series
+
+    def get_series_for_totals_chart(self) -> list[Series]:
+        """Get the series used in a chart of income and expenses totals."""
+        total_series = []
+        total_series.append(self.total_income_series)
+        total_series.append(self.total_expenses_series)
+        total_series.append(self.total_surplus_series)
+        return total_series
+
     def append_sum_cells(self):
+        """For each data column in the table. Append a cell that sums the values in that column."""
         self.timespan_col.append_data_cell('Totals', cell_type='total')
         for col in self.income_series:
             col.create_sum_cell()

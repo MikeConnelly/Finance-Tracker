@@ -11,6 +11,7 @@ OVERALL_DATA_WORKSHEET_NAME = 'OVERALL_DATA'
 def create_overall_data_worksheet(workbook: Workbook, finance_data: FinanceData, styles_map: Styles):
     """Create a new worksheet and populate it with the overall data by month."""
     worksheet = workbook.add_worksheet(OVERALL_DATA_WORKSHEET_NAME)
+    # TODO: setup default and custom worksheet formats
     worksheet.set_column(0, 30, 15)
     overall_data = finance_data.get_monthly_overall()
 
