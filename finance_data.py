@@ -54,17 +54,42 @@ class FinanceData:
             if minor_category in self.default_values[major_category].keys():
                 return major_category
         return None
+    
+    def get_overall(self) -> Dict[str, Dict[str, float]]:
+        """Get totals for each major and minor category for all time."""
+        totals = copy.deepcopy(self.default_values)
+        for year in self.data.keys():
+            for month in self.data[year].keys():
+                for day in self.data[year][month].keys():
+                    for major in self.data[year][month][day].keys():
+                        for minor in self.data[year][month][day][major].keys():
+                            totals[major][minor] += self.data[year][month][day][major][minor]
+                            totals[major][minor] = round(totals[major][minor], 2)
+        return totals
+    
+    def get_yearly_overall(self) -> Dict[str, Dict[str, Dict[str, float]]]:
+        """Get the totals for each major and minor category for every year in this data."""
+        yearly_totals = {}
+        for year in self.data.keys():
+            yearly_totals[year] = copy.deepcopy(self.default_values)
+            for month in self.data[year].keys():
+                for day in self.data[year][month].keys():
+                    for major in self.data[year][month][day].keys():
+                        for minor in self.data[year][month][day][major].keys():
+                            yearly_totals[year][major][minor] += self.data[year][month][day][major][minor]
+                            yearly_totals[year][major][minor] = round(yearly_totals[year][major][minor], 2)
+        return yearly_totals
 
     def get_monthly_overall(self) -> Dict[str, Dict[str, Dict[str, float]]]:
-        """Get the toals for each major and minor category for every month in this data."""
+        """Get the totals for each major and minor category for every month in this data."""
         monthly_totals = {}
         for year in self.data.keys():
             for month in self.data[year].keys():
                 month_key = f'{year}/{month}'
                 monthly_totals[month_key] = copy.deepcopy(self.default_values)
-                for day in self.data[year][month]:
-                    for major in self.data[year][month][day]:
-                        for minor in self.data[year][month][day][major]:
+                for day in self.data[year][month].keys():
+                    for major in self.data[year][month][day].keys():
+                        for minor in self.data[year][month][day][major].keys():
                             monthly_totals[month_key][major][minor] += self.data[year][month][day][major][minor]
                             monthly_totals[month_key][major][minor] = round(monthly_totals[month_key][major][minor], 2)
         return monthly_totals
@@ -76,8 +101,8 @@ class FinanceData:
         for month in self.data[year].keys():
             month_key = f'{year}/{month}'
             monthly_expenses_totals[month_key] = copy.deepcopy(default_expenses_values)
-            for day in self.data[year][month]:
-                for minor in self.data[year][month][day]['expenses']:
+            for day in self.data[year][month].keys():
+                for minor in self.data[year][month][day]['expenses'].keys():
                     monthly_expenses_totals[month_key][minor] += self.data[year][month][day]['expenses'][minor]
                     monthly_expenses_totals[month_key][minor] = round(monthly_expenses_totals[month_key][minor], 2)
         return monthly_expenses_totals
@@ -85,7 +110,7 @@ class FinanceData:
     def get_daily_expenses(self, year: str, month: str) -> Dict[str, Dict[str, float]]:
         """Get the contents of the expenses category for every day of a given month and year."""
         daily_expenses_map = copy.deepcopy(self.data[year][month])
-        for day in daily_expenses_map:
+        for day in daily_expenses_map.keys():
             daily_expenses_map[day] = daily_expenses_map[day]['expenses']
         return daily_expenses_map
 

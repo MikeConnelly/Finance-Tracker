@@ -3,6 +3,7 @@ ftenv/
 bank_activity/
 credit_card_activity/
 config/config.json
+images/
 out.csv
 todo.txt
 *.xlsx*

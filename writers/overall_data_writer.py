@@ -1,7 +1,7 @@
 from xlsxwriter import Workbook
 
 from finance_data import FinanceData
-from writers import writer_utils
+from writers import writer_utils, sankey
 from writers.tables import OverallTable
 from writers.styles import Styles
 
@@ -13,11 +13,11 @@ def create_overall_data_worksheet(workbook: Workbook, finance_data: FinanceData,
     worksheet = workbook.add_worksheet(OVERALL_DATA_WORKSHEET_NAME)
     # TODO: setup default and custom worksheet formats
     worksheet.set_column(0, 30, 15)
-    overall_data = finance_data.get_monthly_overall()
+    monthly_overall_data = finance_data.get_monthly_overall()
 
     table_row = 0
     table_col = 0
-    table = OverallTable(table_row, table_col, overall_data, styles_map)
+    table = OverallTable(table_row, table_col, monthly_overall_data, styles_map)
     writer_utils.write_table(workbook, worksheet, table)
 
     income_expenses_chart_row = table_row + table.get_height()
@@ -27,7 +27,11 @@ def create_overall_data_worksheet(workbook: Workbook, finance_data: FinanceData,
         income_expenses_chart_row, income_expenses_chart_col)
 
     totals_chart_row = income_expenses_chart_row
-    totals_chart_col = income_expenses_chart_col + 15
+    totals_chart_col = income_expenses_chart_col + 10
     writer_utils.create_line_chart_for_table(
         workbook, worksheet, OVERALL_DATA_WORKSHEET_NAME, table, table.get_series_for_totals_chart(),
         totals_chart_row, totals_chart_col)
+
+    category_overall_data = finance_data.get_overall()
+    img_path = sankey.create_sankey_plot_for_overall_data(category_overall_data)
+    worksheet.insert_image('A45', img_path)
