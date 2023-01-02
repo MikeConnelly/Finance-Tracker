@@ -45,8 +45,15 @@ class FinanceData:
         return categories
 
     def get_minor_categories(self, major_category: str) -> list[str]:
-        """Get the `list` of minor categories for a for a given `major_category`."""
+        """Get the `list` of minor categories for a given `major_category`."""
         return list(self.default_values[major_category].keys())
+    
+    def get_major_category(self, minor_category: str) -> str:
+        """Get the major category associated with the given `minor_category`."""
+        for major_category in self.default_values.keys():
+            if minor_category in self.default_values[major_category].keys():
+                return major_category
+        return None
 
     def get_monthly_overall(self) -> Dict[str, Dict[str, Dict[str, float]]]:
         """Get the toals for each major and minor category for every month in this data."""

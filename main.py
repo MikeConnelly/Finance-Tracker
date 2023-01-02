@@ -2,8 +2,8 @@ import copy
 import json
 from typing import Dict, List, Tuple
 
-from bank_reader import parse_bank_data
-from credit_card_reader import parse_credit_card_data
+from parsers.bank_parser import parse_bank_data
+from parsers.credit_card_parser import parse_credit_card_data
 from finance_data import FinanceData
 from writer import create_xlsx_file
 from writers.styles import Styles
