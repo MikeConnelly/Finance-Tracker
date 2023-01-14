@@ -15,7 +15,7 @@ def create_xlsx_file(finance_data: FinanceData, custom_styles: Styles, descripti
     expenses_styles = merge_styles_with_defaults(finance_data.get_minor_categories('expenses'), custom_styles)
 
     workbook = xlsxwriter.Workbook(FILE_NAME)
-    overall_data_writer.create_overall_data_worksheet(workbook, finance_data, overall_styles)
+    overall_data_writer.create_overall_worksheets(workbook, finance_data, overall_styles)
     monthly_expenses_writer.create_monthly_expenses_worksheets(workbook, finance_data, expenses_styles)
     daily_expenses_writer.create_daily_expenses_worksheets(workbook, finance_data, expenses_styles)
     workbook.close()

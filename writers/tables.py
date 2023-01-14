@@ -28,7 +28,7 @@ class Series:
         self.header_cell = Cell(start_row, col, header_text, self.get_format('header'))
         self.data: list[Cell] = []
         self.sum_cell = None
-    
+
     def __str__(self) -> str:
         cells_str = ",".join([str(cell) for cell in self.get_cells_as_list])
         return "Series(start_row: {}, col: {}, category: {}, formats: {}, cells: {})".format(
@@ -103,7 +103,7 @@ class Table:
         self.start_col = start_col
         self.timespans = list(data.keys())
         self.timespan_col = Series(start_row, start_col, 'timespan', styles, use_empty_header=True)
-        
+
         for timespan in self.timespans:
             self.timespan_col.append_data_cell(timespan)
 
@@ -245,7 +245,8 @@ class OverallTable(Table):
 
     def get_width(self) -> int:
         """Get total width of the table."""
-        return 1 + len(self.income_series) + len(self.expenses_series) + len(self.transfers_series) + len(self.unknown_series) + 3
+        return (1 + len(self.income_series) + len(self.expenses_series) + len(self.transfers_series)
+                + len(self.unknown_series) + 3)
 
     def get_cols_as_lists(self) -> list[list[Cell]]:
         """Get all columns in the table represented as lists of cells."""

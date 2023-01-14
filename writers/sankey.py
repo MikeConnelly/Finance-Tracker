@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 from plotly.graph_objects import Figure
 
 IMAGE_DIR = 'images'
-show_interactive_figure = False
+show_interactive_figure = True
 
 
 def create_sankey_plot_for_overall_data(category_overall_data: Dict[str, Dict[str, float]]):
